@@ -1,4 +1,8 @@
 ﻿// Class containing the contols of the user interface and static variables for the game state
+
+//Improvements 
+
+// Calculate Accurate only work with fixed coke position at the end 
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
@@ -17,6 +21,8 @@ public class MenuScript : MonoBehaviour
     public static int scoreValue = 0;
     public static int scoreValue1 = 0;
 
+    private bool nextLevelOpen = false;     // access to the next game level is enabled if true
+
     public static int currentLevel = 0;
 
     public static float levelProgress = 0;    // Progress inside the level (value 0-1)
@@ -27,9 +33,9 @@ public class MenuScript : MonoBehaviour
 
 
 
-    public GameObject MenuUI;
-	public GameObject mainMenu;
-	public GameObject HSmenu;
+    public GameObject MenuUI;       // ingame menu
+	public GameObject mainMenu;     // main menu
+	public GameObject HSmenu;          // -- not used
 	
 	
 	public GameObject resBut;	
@@ -38,6 +44,13 @@ public class MenuScript : MonoBehaviour
     public GameObject resetmenu;
     public GameObject resetButton;
 
+    public GameObject dropZone1;            // drop zones to calculate accuracy of the 
+    public GameObject dropZone2;
+    public GameObject dropZone3;
+
+    public static float accuracy1 = 0;        // accuracy for each drop zone 
+    public static float accuracy2 = 0;
+    public static float accuracy3 = 0;
 
 
 
@@ -45,6 +58,7 @@ public class MenuScript : MonoBehaviour
 	public Sprite SoundOnSprite;
 	public Sprite SoundOffSprite;
 	public Text score = null;
+    public Text levelScore = null;
     public Text info = null;
     public Text menuTitle = null;
 
@@ -69,9 +83,6 @@ public class MenuScript : MonoBehaviour
 		mainMenu.SetActive(true);
 		Time.timeScale = 0f;
 
-        
-
-
     }
 
 
@@ -89,8 +100,9 @@ public class MenuScript : MonoBehaviour
 		// updating the score
 		score.text = "Score: "  + scoreValue.ToString();
         info.text = scoreValue0.ToString() + "/1     " + scoreValue.ToString() + "/"+ scoreLimit.ToString()+ "     " +scoreValue1.ToString() + "/1     ";
-        if (scoreValue0 == scoreLimit0 & scoreValue == scoreLimit & scoreValue1 == scoreLimit1)
+        if (scoreValue0 == scoreLimit0 & scoreValue == scoreLimit & scoreValue1 == scoreLimit1 & !SpawnPointScript.gameOver)
         {
+            CalculateAccuracy();
             SpawnPointScript.gameOver = true;
         }
 
@@ -99,7 +111,74 @@ public class MenuScript : MonoBehaviour
 
 
     }
-	
+
+    void CalculateAccuracy()
+    {
+        // accuracy around pos 1
+        GameObject[] objs;
+        objs = GameObject.FindGameObjectsWithTag("GroundedSlice");
+
+        foreach (GameObject slice in objs)
+        {
+            // Calculate accuracy in zone 
+            if (slice.GetComponent<Rigidbody>().transform.position.x < 0 & accuracy1 == 0)
+            {
+                float locDist = Vector2.Distance(new Vector2(dropZone1.transform.position.x, dropZone1.transform.position.z), new Vector2(slice.transform.position.x, slice.transform.position.z));
+                accuracy1 += locDist;
+            }
+
+            if (slice.GetComponent<Rigidbody>().transform.position.x > 0 & slice.GetComponent<Rigidbody>().transform.position.x <2 & accuracy2 == 0)
+            {
+                float locDist = Vector2.Distance(new Vector2(dropZone2.transform.position.x, dropZone2.transform.position.z), new Vector2(slice.transform.position.x, slice.transform.position.z));
+                accuracy2 += locDist;
+            }
+
+            if (slice.GetComponent<Rigidbody>().transform.position.x > 2 & accuracy3 ==0)
+            {
+                float locDist = Vector2.Distance(new Vector2(dropZone3.transform.position.x, dropZone1.transform.position.z), new Vector2(slice.transform.position.x, slice.transform.position.z));
+                accuracy3 += locDist;
+            }
+        }
+
+        // normalizing the values
+
+        accuracy1 = NormalizeAccuracy(accuracy1);
+        accuracy2 = NormalizeAccuracy(accuracy2);
+        //accuracy3 = NormalizeAccuracy(accuracy3);  // -- DISABLED -- need workaround to make flexibility
+
+
+        Debug.Log("Accuracy1: " + accuracy1 + " Accuracy2: " + accuracy2 + " Accuracy3: " + accuracy3);
+
+        levelScore.text = "Accuracy:  \n" + Mathf.FloorToInt(accuracy1).ToString()+" % / "+ Mathf.FloorToInt(accuracy2).ToString() + " % / " + Mathf.FloorToInt(accuracy3).ToString() + " %";
+        if (accuracy1 > 70f & accuracy2 > 70f & accuracy3 > 70f)
+        {
+            nextLevelOpen= true;
+            menuTitle.text = "Task finished!";
+
+        } else
+        {
+            menuTitle.text = "Not good - try again!";
+        }
+
+    }
+
+
+    float NormalizeAccuracy(float accur)
+    {
+        if (accur !=0) { }
+        accur = (1 - (accur - 0.5f) / 1) * 100;
+        if (accur > 100)
+        {
+            accur = 100;
+        } else if (accur < 0)
+        {
+            accur = 0;
+
+        }
+        return accur;
+    }
+
+
 
     void UpdateLevelProgress()
     {
@@ -155,8 +234,8 @@ public class MenuScript : MonoBehaviour
 		mainMenu.SetActive(true);
 		SpawnPointScript.gameOver = false;
 		Time.timeScale = 0f;
-		
-	}
+
+    }
 	
 	public void Restart()
 	{
@@ -182,11 +261,17 @@ public class MenuScript : MonoBehaviour
         levelProgress = 0;
         ProgressBar.fillRatio = 0.05f; // reseting the infill ofthe progress bar
 
+        accuracy1 = 0;        // resetting the accuracy
+        accuracy2 = 0;
+        accuracy3 = 0;
+
+        nextLevelOpen = false;
 
 
 
-        // getting the new values for in-level score value
-        scoreLimit = SpawnPointScript.FoodSequenceFull[currentLevel].Length - 2;
+
+    // getting the new values for in-level score value
+    scoreLimit = SpawnPointScript.FoodSequenceFull[currentLevel].Length - 2;
 
 
         // removing all menus and  switches 
@@ -199,7 +284,7 @@ public class MenuScript : MonoBehaviour
 
         // instantiate box and  glass
 
-        GameObject obj1 =  Instantiate(box, new Vector3(-0.68f, -7.9f,-1.32f), Quaternion.Euler(0f, 0, 0f)) as GameObject;
+        GameObject obj1 =  Instantiate(box, new Vector3(-0.68f, -7.9f,-1.04f), Quaternion.Euler(0f, 0, 0f)) as GameObject;
         GameObject obj2 = Instantiate(glass, new Vector3(2.22f, -8f, -1.29f), Quaternion.Euler(0f, 0, 0f)) as GameObject;
         GameObject obj3 = Instantiate(fluidLevel, new Vector3(2.22f, -8.06f, -1.32f), Quaternion.Euler(0f, 0, 0f)) as GameObject;
 
@@ -286,12 +371,13 @@ public class MenuScript : MonoBehaviour
 
 		if(PausePressed)
 		{
-		Resume();
+		    Resume();
 		}
 		else 
 		{
-		PausePressed = true;
-		}
+		    PausePressed = true;
+            levelScore.text = " ";
+        }
 	}
 	
 	public void pressSoundButton()
@@ -311,22 +397,26 @@ public class MenuScript : MonoBehaviour
 			MenuUI.SetActive(false);
             nextButton.SetActive(false);
         } else {
-			MenuUI.SetActive(true);
-            nextButton.SetActive(true);
 
+            // end of the level screen
+			MenuUI.SetActive(true);
+           
+            if (nextLevelOpen)
+                nextButton.SetActive(true);
+                
+
+            // End of the game screen
             if (SpawnPointScript.FoodSequenceFull.Length == currentLevel+1)
             {
                 resetmenu.SetActive(true); 
                 resetButton.SetActive(true);
                 MenuUI.SetActive(false);
                 nextButton.SetActive(false);
-
-
             }
 
         }
 
-		menuTitle.text = "Task finished!";
+		
 		//making resume button transparent
 		//resBut = GameObject.Find("ResumeButton");
 		resBut.GetComponentInChildren<Text>().text = "";
@@ -369,6 +459,32 @@ public class MenuScript : MonoBehaviour
 
 
     }
+
+
+    // based on the order of items in the level the script determines which tray elements 
+    // (box, or glass) shoul be spawned at each level
+
+    void SpawnItemsOnPlate()
+    {
+        int[] levelContent = SpawnPointScriptsFoodSequenceFull[currentLevel];
+
+
+        if (levelContent[0] == 8)
+        {
+            GameObject obj1 = Instantiate(box, new Vector3(-0.68f, -7.9f, -1.04f), Quaternion.Euler(0f, 0, 0f)) as GameObject;
+        }
+
+        if (levelContent[levelContent.Length()-1] == 9)
+        {
+            GameObject obj2 = Instantiate(glass, new Vector3(2.22f, -8f, -1.29f), Quaternion.Euler(0f, 0, 0f)) as GameObject;
+            GameObject obj3 = Instantiate(fluidLevel, new Vector3(2.22f, -8.06f, -1.32f), Quaternion.Euler(0f, 0, 0f)) as GameObject;
+        }
+
+
+
+
+    }
+
 
 
 }

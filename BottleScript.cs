@@ -12,7 +12,7 @@ public class BottleScript : MonoBehaviour
     public float waitTimeAfterFilling = 1.0f;
     public float fillSpeed = 0.2f;
 
-    private float minDist = 5f;  // minimal distance where cola will be filled
+    private float minDist = 2.8f;  // minimal distance where cola will be filled
 
     private bool fillingSoda = false;
 
@@ -30,6 +30,9 @@ public class BottleScript : MonoBehaviour
         var emission = ps.emission;
         emission.rateOverTime = 0;
 
+
+    
+
     }
 
     // Update is called once per frame
@@ -42,8 +45,8 @@ public class BottleScript : MonoBehaviour
 
             // calculate distance from bottle to glase
             float dist = Vector3.Distance(this.transform.position, startPosLevel);
-
-            // move the level of liquid 
+            
+            // move the level of liquid if its on the fround and the nozzle is close to glasse
             if (level.transform.position.y < -7.35 & dist < minDist)
             {
                 level.transform.Translate(0f, fillSpeed * Time.deltaTime, 0f);
@@ -61,6 +64,7 @@ public class BottleScript : MonoBehaviour
         if (Input.GetMouseButtonUp(0))
         {
             //fillingSoda = true;
+            calculateColaAccuracy();
             StartCoroutine(RemoveBottle());
             SpawnPointScript.sliceOntheFly = false;
 
@@ -91,6 +95,22 @@ public class BottleScript : MonoBehaviour
         this.GetComponent<Rigidbody>().AddRelativeTorque(0, 0, -500f);
 
         MenuScript.scoreValue1 += 1;
+
+    }
+
+
+    void calculateColaAccuracy()
+    {
+        
+        float infill = Mathf.Abs((startPosLevel.y - level.transform.position.y) / 0.6f);
+        if (infill > 1)
+        {
+            infill = 1 - (infill - 1);
+        }
+
+        MenuScript.accuracy3 = infill * 100;
+        Debug.Log("infill " + infill);
+
 
     }
 

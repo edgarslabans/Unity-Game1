@@ -89,8 +89,6 @@ public class SpawnPointScript : MonoBehaviour
             sliceOntheFly = true;
         }
 
-
-
         if (timeToRiseCamera){
             // the last number - speed of rising camera
 			mainCam.transform.position = Vector3.Lerp (mainCam.transform.position, newCameraPosition, 0.005f);
@@ -170,7 +168,7 @@ public class SpawnPointScript : MonoBehaviour
         {
 
 
-            GameObject bulletInstance = Instantiate(slices[randNum], new Vector3(origin1.x+1.8f, origin1.y, origin1.z + zShift), Quaternion.Euler(0f, 0, 0f)) as GameObject;
+            GameObject bulletInstance = Instantiate(slices[randNum], new Vector3(origin1.x+1.7f, origin1.y, origin1.z + zShift), Quaternion.Euler(0f, 0, 0f)) as GameObject;
 
             //bulletInstance.transform.rotation = new Quaternion.Euler(0f, yRot + 45f, 90f);
             bulletInstance.transform.Rotate(0f, yRot + 0f, 90f);       // , Space.Self
