@@ -280,13 +280,16 @@ public class MenuScript : MonoBehaviour
 		SpawnPointScript.gameOver = false;
 		PausePressed = false;
 		colliderBase.resultUploaded = false;
-		
+
 
         // instantiate box and  glass
 
-        GameObject obj1 =  Instantiate(box, new Vector3(-0.68f, -7.9f,-1.04f), Quaternion.Euler(0f, 0, 0f)) as GameObject;
-        GameObject obj2 = Instantiate(glass, new Vector3(2.22f, -8f, -1.29f), Quaternion.Euler(0f, 0, 0f)) as GameObject;
-        GameObject obj3 = Instantiate(fluidLevel, new Vector3(2.22f, -8.06f, -1.32f), Quaternion.Euler(0f, 0, 0f)) as GameObject;
+        SpawnItemsOnPlate();
+
+
+        //GameObject obj1 =  Instantiate(box, new Vector3(-0.68f, -7.9f,-1.04f), Quaternion.Euler(0f, 0, 0f)) as GameObject;
+        //GameObject obj2 = Instantiate(glass, new Vector3(2.22f, -8f, -1.29f), Quaternion.Euler(0f, 0, 0f)) as GameObject;
+        //GameObject obj3 = Instantiate(fluidLevel, new Vector3(2.22f, -8.06f, -1.32f), Quaternion.Euler(0f, 0, 0f)) as GameObject;
 
         //spawning the first slice  at all spawn points
         SpawnPointScript spw = FindObjectOfType<SpawnPointScript>();
@@ -466,7 +469,7 @@ public class MenuScript : MonoBehaviour
 
     void SpawnItemsOnPlate()
     {
-        int[] levelContent = SpawnPointScriptsFoodSequenceFull[currentLevel];
+        int[] levelContent = SpawnPointScript.FoodSequenceFull[currentLevel];
 
 
         if (levelContent[0] == 8)
@@ -474,11 +477,29 @@ public class MenuScript : MonoBehaviour
             GameObject obj1 = Instantiate(box, new Vector3(-0.68f, -7.9f, -1.04f), Quaternion.Euler(0f, 0, 0f)) as GameObject;
         }
 
-        if (levelContent[levelContent.Length()-1] == 9)
+        if (levelContent[levelContent.Length-1] == 9)
         {
             GameObject obj2 = Instantiate(glass, new Vector3(2.22f, -8f, -1.29f), Quaternion.Euler(0f, 0, 0f)) as GameObject;
             GameObject obj3 = Instantiate(fluidLevel, new Vector3(2.22f, -8.06f, -1.32f), Quaternion.Euler(0f, 0, 0f)) as GameObject;
         }
+
+
+
+        if (levelContent[0] == 9)
+        {
+            GameObject obj2 = Instantiate(glass, new Vector3(-0.68f, -8f, -1.04f), Quaternion.Euler(0f, 0, 0f)) as GameObject;
+            GameObject obj3 = Instantiate(fluidLevel, new Vector3(-0.68f, -8.06f, -1.04f), Quaternion.Euler(0f, 0, 0f)) as GameObject;
+        }
+
+        if (levelContent[levelContent.Length - 1] == 8)
+        {
+            GameObject obj1 = Instantiate(box, new Vector3(2.22f, -8f, -1.29f), Quaternion.Euler(0f, 0, 0f)) as GameObject;
+
+        }
+
+
+
+
 
 
 

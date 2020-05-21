@@ -2,6 +2,7 @@
 // the first slice is instantiated by Restart() command in MenuScript
 
 //Issues: 1) the clicks will be only registered if score >0 (thus, the first auto falling slice is important)
+// The spawn positions should not be rigid but determined by FoodSequenceArray
 
 using System.Collections;
 using System.Collections.Generic;
@@ -54,7 +55,7 @@ public class SpawnPointScript : MonoBehaviour
 
     public static int[][] FoodSequenceFull =
     {
-    new int[] {  8, 0, 9 },
+    new int[] {  9, 0, 8 },
     new int[] {  8,0,2,0,9 },
     new int[] {  8, 0, 3,2,4, 0, 9}
     };  
